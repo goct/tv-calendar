@@ -23,11 +23,6 @@ var trackSelectedShowsButton = $("#track-selected-shows-button");
 var markRssAsReadButton = $(".rss-read");
 
 var user = new createUser();
-var usersUntrackedShows = [];
-var allShowsList = [];
-var episodeInfo = [];
-var futureShowsAiring = [];
-var fullShowEpisodeInfo;
 var _MS_PER_DAY = 1000 * 60 * 60 * 24;
 var ENTER_KEY_CODE = 13;
 var cookieHash;
@@ -287,26 +282,7 @@ function displayRssItems(rssItems, lastScrapeTS) {
 	timerUpdater = setInterval(function() {
 		updateScrapeTimer(lastScrapeTS);
 	}, 1000);
-	/*
-	var nowTS = Date.now() / 1000;
-	//var nextScrapeTime = new Date(lastScrapeTS + 1200000,  //20 min
-	var TSDiff = nowTS - lastScrapeTS;
-	// console.log("nowTS is " + new Date(nowTS * 1000).toISOString());
-	// console.log("lastScrapeTS is " + new Date(lastScrapeTS * 1000).toISOString());
-	// console.log("tsdiff is " + TSDiff);
-	var msec = (1200 - TSDiff) * 1000;
-	var hh = Math.floor(msec / 1000 / 60 / 60);
-	msec -= hh * 1000 * 60 * 60;
-	var mm = Math.floor(msec / 1000 / 60);
-	msec -= mm * 1000 * 60;
-	var ss = Math.floor(msec / 1000);
-	msec -= ss * 1000;	
-	
-	
-	var nextScrapeString = mm + " min, " + ss + " sec.";
-	*/
-	//console.log(hh + " hours, " + mm + " minutes, " + ss + " seconds until next scrape");
-		
+
 	if (!rssItems.length) {
 		$(".rss-read").remove();
 		$("#latest-nzbs-div").remove();
@@ -393,7 +369,6 @@ loginForm.submit(function() {
 
 
 function updateUsersUntrackedShows() {
-	console.log("updating");
 	var untrackedShowsDisplayString = "";
 	
 	//for (var i = 0; i <= TVdata.allShowNames.length; i++) {
@@ -405,8 +380,6 @@ function updateUsersUntrackedShows() {
 				user.untrackedShows.push(showName);
 			}
 		} else if (user.untrackedShows.indexOf(showName) != -1) {
-			debugger;
-			alert("here");
 			//they are tracking the show, so remove it from untracked shows list
 			user.untrackedShows.splice(user.untrackedShows.indexOf(showName), 1);
 		}
