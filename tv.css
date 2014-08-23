@@ -1,0 +1,324 @@
+body {
+	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	/*background:url(http://www.goct.ca/tv-calendar/images/textures/binding_dark.png) repeat 0 0;*/
+	background: #3a77b6; /* Old browsers */
+	background: -moz-linear-gradient(-45deg,  #3a77b6 0%, #53ca96 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, right bottom, color-stop(0%,#3a77b6), color-stop(100%,#53ca96)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(-45deg,  #3a77b6 0%,#53ca96 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(-45deg,  #3a77b6 0%,#53ca96 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(-45deg,  #3a77b6 0%,#53ca96 100%); /* IE10+ */
+	background: linear-gradient(135deg,  #3a77b6 0%,#53ca96 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#3a77b6', endColorstr='#53ca96',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+
+
+}
+
+h3.tracked {
+	background: red;
+	color: black;
+}
+
+h3, form {
+	margin:0px;
+}
+
+h2 {
+	margin-top:0px;
+}
+
+h1 {
+	margin-top:0px;
+}
+
+p {
+	margin-bottom:0px;
+}
+
+input {
+	margin:0px;
+	padding-left:4px;
+}
+
+input:not([type=button]):not([type=submit]) {
+	border-radius:3px;
+	zoom:1.4;
+	border-color: rgb(165, 190, 235);
+	border-width: 1px;
+}
+
+#user-info-divs {
+	position:relative;
+	margin-left:auto;
+	margin-right:auto;
+	height:100px;
+	width:500px;
+	/*background-color:#ffffff;*/
+	margin-top: 10px;
+	margin-bottom: 35px;
+}
+
+#login-div, #register-div {
+	background:url(http://www.goct.ca/tv-calendar/images/textures/loginfade.png) repeat 0 0;
+	padding: 10px;
+	text-align: center;
+	border-radius: 5px;
+	border: 1px solid rgb(45, 116, 150);
+	-webkit-box-shadow: 0px 3px 5px #291E46;
+	box-shadow: 0px 3px 5px #291E46;
+}
+
+#login-div {
+	display: none;
+	position: absolute;
+	top: 0px;
+	left: 5px;
+	padding-bottom: 4px;
+	width: 213px;
+}
+
+#register-div {
+	display: none;
+	position: absolute;
+	top: 0px;
+	left: 262px;
+	width: 213px;
+}
+
+#login-password {
+	width: 99px;
+	position: relative;
+	margin-top: 3px;
+	left: -24px;
+}
+
+#remember-me {
+	position: relative;
+	top: 4px;
+}
+
+label[for=remember-me] {
+	position: relative;
+	top: 2px;
+}
+
+#register-div p {
+	margin-top: 0px;
+	margin-bottom: 2px;
+}
+
+#register-div form {
+	position: relative;
+	top: -5px;
+}
+
+#register-password {
+	position: relative;
+	margin-top: 3px;
+	width: 90;
+	left: -30px;
+}
+
+#tracked-shows, #track-more-shows-div {
+	position:relative;
+	display: none;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 50px;
+	margin-bottom: 50px;
+	width: 335px;
+	text-align: center;
+	border-radius: 5px;
+	padding-top: 20px;
+	padding-bottom: 20px;
+	background:url(http://www.goct.ca/tv-calendar/images/textures/tallfade.png) repeat 0 0;
+	border: 1px solid #118696;
+	-moz-box-shadow: 0px 3px 5px #291E46;
+	-webkit-box-shadow: 0px 3px 5px #291E46;
+	box-shadow: 0px 3px 5px #291E46;
+	/*background:url(http://www.goct.ca/tv-calendar/images/textures/light_wool.png) repeat 0 0;*/
+}
+/*
+#track-more-shows-div {
+	display: none;
+}
+*/
+
+.track-show-checkbox {
+	position: relative;
+	top: 2px;
+	left: 6px;
+}
+
+#add-new-show {
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 20px;
+	width: 239px;
+	text-align: center;
+	border-radius: 5px;
+	padding-top: 10px;
+	padding-bottom: 4px;
+	background:url(http://www.goct.ca/tv-calendar/images/textures/fade.png) repeat 0 0;
+}
+
+#logged-in-username {
+	color: #000000;
+	position: absolute;
+	left: 20px;
+	top: -8px;
+	font-weight: bold;
+}
+
+#log-out-button {
+	position:absolute;
+	top: 2px;
+	left: 320px;
+}
+
+#track-more-shows {
+	position: absolute;
+	left: 127px;
+	top: 2px;
+}
+
+#user-controls {
+	display: none;
+	position: relative;
+	/*background:url(http://www.goct.ca/tv-calendar/images/textures/fade.png) repeat 0 0;*/
+	background-color: #005BFF;
+	top: -8px;
+	left: 0px;
+	width: 530px;
+	height:35px;
+	border-bottom-right-radius: 5px;
+	border-bottom-left-radius: 5px;
+	margin-right: auto;
+	margin-left: auto;
+}
+
+#airing-shows-div {
+	width:530px;
+	margin-top:20px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.future-episodes-day {
+	width: 500px;
+	border-radius: 5px;
+	/*
+	margin-right: auto;
+	margin-left: auto;
+	*/
+	text-align: center;
+	padding: 14px;
+	margin-bottom: 15px;
+	background:url(http://www.goct.ca/tv-calendar/images/textures/fade.png) repeat 0 0;
+	/*border: 1px solid #000000;*/
+	border: 1px solid #118696;
+	-moz-box-shadow: 0px 3px 5px #291E46;
+	-webkit-box-shadow: 0px 3px 5px #291E46;
+	box-shadow: 0px 3px 5px #291E46;
+}
+
+#add-new-show {
+	display: none;
+}
+
+#login-button {
+	/*background-color: #239FD5;*/
+	left: 110;
+	top: 29px;
+}
+
+#register-button {
+	left: 96;
+	top: 37px;
+}
+
+
+.button {
+	border: 1px solid rgb(57, 137, 175);
+	border-radius: 6px;
+	zoom: 1.4;
+	position: absolute;
+
+	background: #499bea; /* Old browsers */
+	background: -moz-linear-gradient(top,  #499bea 0%, #207ce5 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#499bea), color-stop(100%,#207ce5)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  #499bea 0%,#207ce5 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  #499bea 0%,#207ce5 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  #499bea 0%,#207ce5 100%); /* IE10+ */
+	background: linear-gradient(to bottom,  #499bea 0%,#207ce5 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#499bea', endColorstr='#207ce5',GradientType=0 ); /* IE6-9 */
+}
+
+.button:hover {
+	background: #d2e6f9; /* Old browsers */
+	background: -moz-linear-gradient(top,  #d2e6f9 0%, #a9ccf4 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#d2e6f9), color-stop(100%,#a9ccf4)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  #d2e6f9 0%,#a9ccf4 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  #d2e6f9 0%,#a9ccf4 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  #d2e6f9 0%,#a9ccf4 100%); /* IE10+ */
+	background: linear-gradient(to bottom,  #d2e6f9 0%,#a9ccf4 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d2e6f9', endColorstr='#a9ccf4',GradientType=0 ); /* IE6-9 */
+	cursor: pointer;
+	cursor: hand;
+}
+
+.button:active {
+	background: #000000;
+}
+
+.remove-show-table {
+	position: relative;
+	top: 2px;
+}
+
+#track-selected-shows-button {
+	margin-left:auto;
+	margin-right:auto;
+	top:5px;
+	position:relative;
+}
+
+#latest-nzbs-div {
+	position:absolute;
+	left:-5px;
+	top:25px;
+}
+
+#mark-rss-as-read1 {
+	position: absolute;
+	/*top: 12px;
+	left: 12px;*/
+	display:none;
+}
+
+#rss {
+	position: absolute;
+	top: 5px;
+	left: 5px;
+	width: 300px;
+}
+
+.item-link {
+	text-decoration:none;
+}
+
+.series-list {
+	padding-left: 0px;
+	list-style: none;
+}
+
+.ui-accordion-content {
+	white-space: nowrap;
+}
+
+li{
+    margin-top: 1em;
+}
+
+li:first-child {
+    margin-top:0;
+}

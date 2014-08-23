@@ -1,0 +1,64 @@
+<meta charset="UTF-8">
+<html>
+<head>
+	<title>TV Calendar</title>
+	<link rel="stylesheet" type="text/css" href="http://goct.ca/tv-calendar/tv.css">
+	<link rel="stylesheet" type="text/css" href="http://goct.ca/tv-calendar/libraries/jquery-ui-1.10.4.custom/css/ui-lightness/jquery-ui-1.10.4.custom.css">
+	<script type="text/javascript" src="http://goct.ca/jquery-2.1.0.js"></script>
+	<script type="text/javascript" src="http://goct.ca/tv-calendar/libraries/jquery-cookie-master/jquery.cookie.js"></script>
+	<script type="text/javascript" src="http://goct.ca/tv-calendar/libraries/async.js"></script>
+	<script type="text/javascript" src="http://goct.ca/tv-calendar/libraries/jquery-ui-1.10.4.custom/js/jquery-ui-1.10.4.custom.js"></script>
+</head>
+<body>
+	<div id="user-controls">
+		<p id="logged-in-username"></p>
+		<input id="track-more-shows" type="button" class="button" value="track more shows">
+		<input id="log-out-button" type="button" class="button" value="log out">
+	</div>
+	<div id="track-more-shows-div">
+		<h2>Track more shows</h2>
+		<p id="shows-list"></p>
+		<input type="button" class="button" id="track-selected-shows-button" value="Track selected shows">
+	</div>
+	<div id="user-info-divs">
+		<div id="login-div">
+			<form id="login-form">
+				<input id="login-username" type="text" placeholder="Username"><br/>
+				<input id="login-password" type="password" placeholder="Password">
+				<input id="login-button" type="submit" class="button" value="Sign in"><br/>
+				<input id="remember-me" type="checkbox" checked>
+				<label for="remember-me">Remember Me</label>
+			</form>
+		</div>
+		<div id="register-div">
+			<form id="register-form">
+				<p>New? Sign up</p>
+				<input id="register-username" type="text" placeholder="Username">
+				<input id="register-password" type="password" placeholder="Password">
+				<input id="register-button" type="submit" class="button" value="Sign up">
+			</form>
+		</div>
+	</div>
+	<div id="main-content">
+		<div id="airing-shows-div"></div>
+		<div id="tracked-shows">
+			<h2>Tracked Shows:</h2>
+			<p id="shows-list"></p>
+		</div>
+		<div id="add-new-show">
+			<h2>Add new show</h2>
+			<input type="text" id="new-show-name" placeholder="show name...">
+			<input id="submit-new-show" type="button" class="button" value="Add">
+			<p id="add-show-result"></p>
+		</div>
+		<div id="rss">
+			<input id="mark-rss-as-read1" type="button" class="button rss-read" value="Mark all as read">
+			<div id="latest-nzbs-div">
+			</div>
+			<!--input id="mark-rss-as-read2" type="button" class="button rss-read" value="Mark all as read"-->
+		</div>
+	</div>
+	
+	<script type="text/javascript" src="http://goct.ca/tv-calendar/tv.js"></script>
+</body>
+</html>

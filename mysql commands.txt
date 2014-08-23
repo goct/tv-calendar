@@ -1,0 +1,15 @@
+SELECT shows.title AS show_name, episodes.season_num, episodes.episode_num, episodes.title AS episode_title, episodes.air_date, shows.last_updated
+FROM (SELECT show_id, MIN(air_date) AS latest_air_date FROM episodes WHERE air_date >= CURDATE() GROUP BY show_id) as latest_episodes, shows, episodes
+WHERE episodes.show_id = shows.id AND latest_episodes.latest_air_date = episodes.air_date
+GROUP BY show_name
+ORDER BY air_date
+ASC;
+
+/*
+SELECT shows.title AS show_name, episodes.season_num, episodes.episode_num, episodes.title AS episode_title, episodes.air_date, shows.last_updated 
+FROM (SELECT * FROM episodes WHERE air_date >= CURDATE()) as episodes, shows 
+WHERE episodes.show_id = shows.id 
+GROUP BY show_id 
+ORDER BY air_date 
+ASC;
+*/
