@@ -1,5 +1,3 @@
-var allEpisodesInfo;
-var allAiringShowsDiv;
 var loggedIn;
 var addNewShowButton = $("#submit-new-show");
 var showNameInput = $("#new-show-name");
@@ -24,11 +22,8 @@ var trackMoreShowsDiv = $("#track-more-shows-div");
 var trackSelectedShowsButton = $("#track-selected-shows-button");
 var markRssAsReadButton = $(".rss-read");
 
-var loginType;
 var user = new createUser();
-var userID;
 var usersUntrackedShows = [];
-var usersTrackedShows = [];
 var allShowsList = [];
 var episodeInfo = [];
 var futureShowsAiring = [];
@@ -398,6 +393,7 @@ loginForm.submit(function() {
 
 
 function updateUsersUntrackedShows() {
+	console.log("updating");
 	var untrackedShowsDisplayString = "";
 	
 	//for (var i = 0; i <= TVdata.allShowNames.length; i++) {
@@ -408,7 +404,9 @@ function updateUsersUntrackedShows() {
 				//it isn't already on untracked shows list
 				user.untrackedShows.push(showName);
 			}
-		} else if (usersUntrackedShows.indexOf(showName) != -1) {
+		} else if (user.untrackedShows.indexOf(showName) != -1) {
+			debugger;
+			alert("here");
 			//they are tracking the show, so remove it from untracked shows list
 			user.untrackedShows.splice(user.untrackedShows.indexOf(showName), 1);
 		}
