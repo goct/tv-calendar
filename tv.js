@@ -277,6 +277,7 @@ function updateScrapeTimer(lastScrapeTS) {
 }
 
 function displayRssItems(rssItems, lastScrapeTS) {
+	var trackedShowsWithUpdates = [];
 	$("#rss").append("<p id='next-scrape-timer'></p>");
 	updateScrapeTimer(lastScrapeTS);
 	timerUpdater = setInterval(function() {
@@ -289,6 +290,15 @@ function displayRssItems(rssItems, lastScrapeTS) {
 		$("#next-scrape-timer").css("display", "inline");
 		return;
 	}
+	for (var i = 0; i < rssItems.length; i++) {
+		if (user.trackedShows.indexOf(rssItems[i]) !== -1) {
+			//user is tracking this show
+			trackedShowsWithUpdates.push(rssItems[i]);
+			rssItems.splice(i, 1);
+			i--;
+		}
+	};
+	rssItems = trackedShowsWithUpdates.concat(rssItems);
 	for (var i = 0; i < rssItems.length; i++) {
 		var item = rssItems[i];
 		var showName = item["show name"];
