@@ -322,3 +322,7 @@ li{
 li:first-child {
     margin-top:0;
 }
+
+.download-link {
+	margin-right:0.5em;
+}

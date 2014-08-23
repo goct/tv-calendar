@@ -237,7 +237,13 @@ function displayEpisodeInformation(nextEpisodesAiring, recentlyAiredEpisodes) {
 			var episodeNum = padToTwo(episode["episode_num"]);
 			var episodeTitle = episode["episode_title"];
 			var lastUpdated = episode["last_updated"];
-			airingShowsDiv.find("div:last").append("<p id='" + showName.replace(/ /g, "-") + "p'>" + showName + " - S" + seasonNum + "E" + episodeNum + " - " + episodeTitle + "</p>");		
+			var sxex = "S" + seasonNum + "E" + episodeNum;
+			airingShowsDiv.find("div:last").append(
+				"<p id='" + showName.replace(/\(|\)| /g, "") + "-" + sxex + "-p' " +
+				"class='airing-ep-p'>" +
+				showName + " - " + sxex + " - " + episodeTitle + "</p>" +
+				"<div class='download-links'></div>"
+			);		
 		});
 	});
 	$("#tracked-shows").css("display", "block");
@@ -291,8 +297,9 @@ function displayRssItems(rssItems, lastScrapeTS) {
 		return;
 	}
 	for (var i = 0; i < rssItems.length; i++) {
-		if (user.trackedShows.indexOf(rssItems[i]) !== -1) {
+		if (user.trackedShows.indexOf(rssItems[i]["show name"]) !== -1) {
 			//user is tracking this show
+			trackedShowsWithUpdates.push(rssItems[i]);
 			trackedShowsWithUpdates.push(rssItems[i]);
 			rssItems.splice(i, 1);
 			i--;
@@ -306,11 +313,22 @@ function displayRssItems(rssItems, lastScrapeTS) {
 		var seriesID = item["series id"];
 		var epNum = padToTwo(item["episode"]);
 		var seasonNum = padToTwo(item["season"]);
+		var sxex = "S" + seasonNum + "E" + epNum;
 		var epName = item["episode name"];
 		var itemID = item["item id"];
 		var downloadLink = item["download_link"];
 		var displayLink = "<li><a href='" + downloadLink + "' class='item-link'>" + rawTitle + "</a></li>";
-
+		if (i < trackedShowsWithUpdates.length) {
+			if (rawTitle.toLowerCase().indexOf("720p") !== -1 ||
+				rawTitle.toLowerCase().indexOf("1080p") !== -1) {
+				var quality = "HD";
+			} else {
+				var quality = "SD";
+			}
+			$("div").find("#" + showName.replace(/\(|\)| /g, "") + "-" + sxex + "-p").after(
+				"<a class='download-link' href='" + downloadLink + "'>" + quality + "</a>"
+			);
+		}
 		if (!seriesID) {
 			if (!$("#seriesID0").length) {
 				//div doesn't exist for blank series id, so create it
