@@ -1,5 +1,7 @@
 <?php
-date_default_timezone_set('America/Los_Angeles');
+echo "this file is apparently never used";
+die();
+date_default_timezone_set('America/Vancouver');
 
 $mysqli = new mysqli("localhost", "fraggle_db", "l337crewdb", "fraggle_tv");
 if ($mysqli->connect_errno) {
@@ -7,21 +9,38 @@ if ($mysqli->connect_errno) {
 	die();
 }
 
-//$shows_to_get_string = mysqli_real_escape_string($mysqli, $_POST["shows-to-get"]);
-$shows_to_get_string = $_POST["shows-to-get"];
+$shows_to_get_string = $mysqli->real_escape_string($_POST["shows-to-get"]);
 $recently_aired_episodes = array();
 $next_airing_episodes = array();
 $now = new DateTime();
 $now_date_string = date_format($now, "Y-m-d");
 $now_date = new DateTime($now_date_string);
-/*
-//select the most recently aired episode for each show
-$query = "SELECT * "
-. "FROM (SELECT * FROM episodes WHERE air_date < CURDATE() ORDER BY air_date DESC) as alias "
-. "GROUP BY show_id;";
 
 
+if ($shows_to_get_string == "all") {
+	//select the most recently aired episode for every show
+	$query = "SELECT shows.title AS show_name, episodes.season_num, episodes.episode_num, episodes.title as episode_title, MAX(episodes.air_date) AS recent_air_date
+	FROM episodes, shows,
+	(SELECT show_id, MAX(air_date) AS recent_air_date FROM episodes WHERE air_date < CURDATE() GROUP BY show_id) AS recent_episodes
+	WHERE episodes.air_date = recent_episodes.recent_air_date 
+	AND episodes.show_id = recent_episodes.show_id 
+	AND shows.show_id = recent_episodes.show_id 
+	GROUP BY show_name
+	ORDER BY air_date DESC;";
+} else {
+	//select most recently aired episodes for each show in the string
+	$query = "SELECT shows.title AS show_name, episodes.season_num, episodes.episode_num, episodes.title as episode_title, MAX(episodes.air_date) AS recent_air_date
+	FROM episodes, shows,
+	(SELECT show_id, MAX(air_date) AS recent_air_date FROM episodes WHERE air_date < CURDATE() GROUP BY show_id) AS recent_episodes
+	WHERE episodes.air_date = recent_episodes.recent_air_date 
+	AND episodes.show_id = recent_episodes.show_id 
+	AND shows.show_id = recent_episodes.show_id 
+	AND shows.title IN ('" . $shows_to_get_string . "') 
+	GROUP BY show_name
+	ORDER BY air_date DESC;";
+}
 
+//package the recently aired episodes into an array
 if ($result = $mysqli->query($query)) {
 	while ($row = $result->fetch_assoc()) {
 		$recently_aired_episodes[$row["show_name"]] = array();
@@ -35,7 +54,7 @@ if ($result = $mysqli->query($query)) {
 		);
 	}
 }
-*/
+
 
 //get all show names
 $query = "SELECT * FROM shows;";

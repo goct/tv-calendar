@@ -170,6 +170,8 @@ function getAllShowAndEpisodeInfo(callback) {
 		success: function(data) {
 			TVdata.allShowNames = data["all show names"];
 			TVdata.allNextAiringEpisodes = data["next airing episodes"];
+			TVdata.allRecentlyAiringEpisodes = data["recently aired episodes"];
+			console.log(TVdata.allRecentlyAiringEpisodes);
 			callback(null, "ok");
 		},
 		error: function(obj, status, errorString) {
@@ -194,10 +196,21 @@ function dateDiffInDays(a, b) {
   return Math.floor((utc2 - utc1) / _MS_PER_DAY);
 }
 
+function customFormatEpisodeTitle(episode) {
+	switch(episode["show_name"]) {
+		case "Big Brother (US)":
+			if (episode["episode_title"].indexOf("(BB Day ") == -1) {
+				var airDateObj = new Date(episode["air_date"]);
+				episode["episode_title"] = episode["episode_title"] + " (BB Day " + getBBDay(airDateObj) + ")";
+			}
+			break;
+	}
+}
+
 function displayEpisodeInformation(nextEpisodesAiring, recentlyAiredEpisodes) {
-	//console.log(nextEpisodesAiring);
 	var divTitleText;
 	var daysAiringIn = {};
+	var allEpisodes = nextEpisodesAiring.concat(recentlyAiredEpisodes);
 	
 	if ($.isEmptyObject(nextEpisodesAiring)) {
 		airingShowsDiv.append
@@ -207,16 +220,20 @@ function displayEpisodeInformation(nextEpisodesAiring, recentlyAiredEpisodes) {
 		+ "</div>"
 		);
 		return;
+	} else if ($.isEmptyObject(recentlyAiredEpisodes)) {
+		console.log("empty!");/*
+		airingShowsDiv.append
+		(
+		"<div class='past-episodes-day'>"
+		+ "<h3>There are no shows with past air dates.</h3>"
+		+ "</div>"
+		);
+		return;*/
 	}
 	
 	$.each(nextEpisodesAiring, function(index, episode) {
-		//custom format Big Brother US episodes by concatenating the BBday
-		if (episode["show_name"] == "Big Brother (US)") {// && episode["title"].toLowerCase().indexOf("live") !== -1) {	
-			if (episode["episode_title"].indexOf("(BB Day ") == -1) {
-				var airDateObj = new Date(episode["air_date"]);
-				episode["episode_title"] = episode["episode_title"] + " (BB Day " + getBBDay(airDateObj) + ")";
-			}
-		}
+		customFormatEpisodeTitle(episode);
+		//check if there's an array index for this number of days airing in
 		if (!daysAiringIn[episode["days_airing_in"]]) {
 			daysAiringIn[episode["days_airing_in"]] = [];
 		}
@@ -252,17 +269,26 @@ function displayEpisodeInformation(nextEpisodesAiring, recentlyAiredEpisodes) {
 function updateScrapeTimer(lastScrapeTS) {
 	var nowTS = Date.now() / 1000;
 	var TSDiff = nowTS - lastScrapeTS;
-	var msec = (1200 - TSDiff) * 1000;
-	var hh = Math.floor(msec / 1000 / 60 / 60);
-	msec -= hh * 1000 * 60 * 60;
-	var mm = Math.floor(msec / 1000 / 60);
-	msec -= mm * 1000 * 60;
-	var ss = Math.floor(msec / 1000);
+	var minutesBetweenUpdates = 20;
+	var msec = (minutesBetweenUpdates * 60 - TSDiff) * 1000;
+	if (msec > 0) {
+		var hh = Math.floor(msec / 1000 / 60 / 60);
+		msec -= hh * 1000 * 60 * 60;
+		var mm = Math.floor(msec / 1000 / 60);
+		msec -= mm * 1000 * 60;
+		var ss = Math.floor(msec / 1000);
+	} else {
+		var ss = -1; //arbitrary < 0 value
+		var mm = -1; //arbitrary < 0 value
+	}
 	//msec -= ss * 1000;
 	if (mm > 0) {
-		if (mm > 20) {
+		if (mm > minutesBetweenUpdates) {
 			$("#next-scrape-timer").text("A bug occurred. Try reloading the page in a few seconds"); //fix this
-			clearInterval(timerUpdater);
+			if (typeof timerUpdater !== 'undefined') {
+				clearInterval(timerUpdater);
+			}
+			console.log(mm);
 			return;
 		}
 		var nextScrapeString = "Next update: " + mm + " min, " + ss + " sec";
@@ -271,32 +297,63 @@ function updateScrapeTimer(lastScrapeTS) {
 		var nextScrapeString = "Next update: " + ss + " sec";
 		$("#next-scrape-timer").text(nextScrapeString);
 	} else {
-		$("#next-scrape-timer").text("Next update is available upon page refresh.");
-		clearInterval(timerUpdater);
-		//if (!$("#latest-nzbs-div").length) {
-			$("#next-scrape-timer").text("Reloading page within 10 seconds...");
-			setTimeout(function() {
-				location.reload();
-			}, 10000);
-		//}
+		$("#next-scrape-timer").text("Searching for new update...");
+		rssUpdater = setInterval(function() {fetchNewRssItems(lastScrapeTS)}, 3000);
+		if (typeof timerUpdater !== 'undefined') {
+			clearInterval(timerUpdater);
+		}
 	}
+}
+
+function fetchNewRssItems(lastScrapeTS) {
+	$.ajax({
+		data: {"last-scrape-ts": lastScrapeTS, "user-id": user.id},
+		type: "POST",
+		url: "get-nzb-rss-info.php",
+		dataType: "json",
+		success: function(data) {
+			if (data["msg"] == "no update yet") {
+				//console.log("no update detected");
+			} else {
+				//console.log("received data!!!!");
+				//console.log(data);
+				//reset rss area
+				$("#rss").children("#next-scrape-timer").remove();
+				$(".download-link").remove();
+				$("#latest-nzbs-div").empty();
+				displayRssItems(data["rss-items"], data["last-scrape-ts"]);
+				window.clearInterval(rssUpdater);				
+			}
+		},
+		error: function(obj, status, errorMsg) {
+			console.log("ajax error occurred");
+			console.log("obj is:");
+			console.log(obj);
+			console.log("status is " + status);
+			console.log("errorMsg is " + errorMsg);
+		}
+	});
 }
 
 function displayRssItems(rssItems, lastScrapeTS) {
 	var trackedShowsWithUpdates = [];
+
 	$("#rss").append("<p id='next-scrape-timer'></p>");
-	updateScrapeTimer(lastScrapeTS);
+	//updateScrapeTimer(lastScrapeTS);
 	timerUpdater = setInterval(function() {
 		updateScrapeTimer(lastScrapeTS);
 	}, 1000);
 
-	if (!rssItems.length) {
-		$(".rss-read").remove();
-		$("#latest-nzbs-div").remove();
+	if (!rssItems.length) {		
+		$(".rss-read").hide();
+		$("#latest-nzbs-div").hide();
 		$("#next-scrape-timer").css("display", "inline");
 		return;
+	} else {
+		$(".rss-read").show();
+		$("#latest-nzbs-div").show();		
 	}
-	for (var i = 0; i < rssItems.length; i++) {
+	/*for (var i = 0; i < rssItems.length; i++) {
 		if (user.trackedShows.indexOf(rssItems[i]["show name"]) !== -1) {
 			//user is tracking this show
 			trackedShowsWithUpdates.push(rssItems[i]);
@@ -305,7 +362,7 @@ function displayRssItems(rssItems, lastScrapeTS) {
 			i--;
 		}
 	};
-	rssItems = trackedShowsWithUpdates.concat(rssItems);
+	rssItems = trackedShowsWithUpdates.concat(rssItems);*/
 	for (var i = 0; i < rssItems.length; i++) {
 		var item = rssItems[i];
 		var showName = item["show name"];
@@ -318,6 +375,9 @@ function displayRssItems(rssItems, lastScrapeTS) {
 		var itemID = item["item id"];
 		var downloadLink = item["download_link"];
 		var displayLink = "<li><a href='" + downloadLink + "' class='item-link'>" + rawTitle + "</a></li>";
+		if (i == rssItems.length - 1) {
+			user.lastNzbID = itemID;
+		}
 		if (i < trackedShowsWithUpdates.length) {
 			if (rawTitle.toLowerCase().indexOf("720p") !== -1 ||
 				rawTitle.toLowerCase().indexOf("1080p") !== -1) {
@@ -357,18 +417,22 @@ function displayRssItems(rssItems, lastScrapeTS) {
 			$("#seriesID" + seriesID + "-list").append(displayLink);
 		}
 	};
-	$("#latest-nzbs-div").accordion({
-	  collapsible: true,
-	  active: false,
-	  heightStyle: "content"
-	});
-	$(".rss-read").css("display", "block");
+	if (!$("#latest-nzbs-div").hasClass("ui-accordion")) {
+		$("#latest-nzbs-div").accordion({
+		  collapsible: true,
+		  active: false,
+		  heightStyle: "content"
+		});
+	} else {
+		$("#latest-nzbs-div").accordion("refresh");
+	}
+	//$(".rss-read").css("display", "block");
 	$("#next-scrape-timer").css("display", "none");
 }
 
 markRssAsReadButton.click(function() {
-	$("#latest-nzbs-div").remove();
-	$(".rss-read").remove();
+	$("#latest-nzbs-div").hide();
+	$(".rss-read").hide();
 	$("#next-scrape-timer").css("display", "inline");
 	$.ajax({
 		url: "update-last-nzb-viewed.php",
@@ -571,7 +635,7 @@ function makeSiteInstance() {
 			},
 			function(callback) {
 				//display show names and episode info
-				displayEpisodeInformation(TVdata.allNextAiringEpisodes, null);
+				displayEpisodeInformation(TVdata.allNextAiringEpisodes, TVdata.allRecentlyAiringEpisodes);
 				updateTrackedShows();
 				callback(null, "proceed");
 			}
@@ -653,7 +717,7 @@ function makeSiteInstance() {
 				$("#user-info-divs").css("display", "none");
 				$("#logged-in-username").html(user.name);
 				userControlsDiv.css("display", "block");
-				$(".rss-read").css("display", "block");
+				//$(".rss-read").show();
 				callback(null, "proceed");
 			},
 			function(callback) {
@@ -674,7 +738,7 @@ function makeSiteInstance() {
 	this.logout = function() {
 		loggedIn = false;
 		$.removeCookie("hash");
-		$(".rss-read").css("display", "none");
+		$(".rss-read").show();
 		userControlsDiv.css("display", "none");
 		trackMoreShowsDiv.css("display", "none");
 		airingShowsDiv.empty();
@@ -694,7 +758,7 @@ function makeSiteInstance() {
 				loginDiv.css("display", "block");
 				registerDiv.css("display", "block");
 				$("#user-info-divs").css("display", "block");
-				displayEpisodeInformation(TVdata.allNextAiringEpisodes, null);
+				displayEpisodeInformation(TVdata.allNextAiringEpisodes, TVdata.allRecentlyAiringEpisodes);
 				updateTrackedShows();
 				callback(null, "proceed");
 			}
