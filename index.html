@@ -12,6 +12,13 @@
 <body>
 	<div id="user-controls">
 		<p id="logged-in-username"></p>
+		<div id="switch-container" class="switch">
+	      <input type="radio" class="switch-input" name="view" value="Upcoming" id="Upcoming" checked>
+	      <label for="Upcoming" class="switch-label switch-label-off">Upcoming</label>
+	      <input type="radio" class="switch-input" name="view" value="Past" id="Past">
+	      <label for="Past" class="switch-label switch-label-on">Past</label>
+	      <span class="switch-selection"></span>
+	    </div>
 		<input id="track-more-shows" type="button" class="button" value="track more shows">
 		<input id="log-out-button" type="button" class="button" value="log out">
 	</div>

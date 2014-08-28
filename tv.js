@@ -23,6 +23,7 @@ var trackSelectedShowsButton = $("#track-selected-shows-button");
 var markRssAsReadButton = $(".rss-read");
 
 var user = new createUser();
+var timeSwitch = "future";
 var _MS_PER_DAY = 1000 * 60 * 60 * 24;
 var ENTER_KEY_CODE = 13;
 var cookieHash;
@@ -34,7 +35,8 @@ function createUser() {
 	this.id;
 	this.combinedHash;
 	this.nextEpisodesAiring;
-	this.lastNzbID;
+	this.recentlyAiredEpisodes;
+	this.potentialLastViewedNzbID;
 	this.rssItems;
 	this.trackedShows = [];
 	this.untrackedShows = [];
@@ -164,14 +166,15 @@ function addShowToDatabase() {
 function getAllShowAndEpisodeInfo(callback) {
 	$.ajax({
 		url: "get-show-and-episode-info.php",
-		data: {"shows-to-get": "all"},
+		data: {"user-id": null, "shows-to-get": "all"},
 		dataType: "json",
 		type: "POST",
 		success: function(data) {
-			TVdata.allShowNames = data["all show names"];
-			TVdata.allNextAiringEpisodes = data["next airing episodes"];
-			TVdata.allRecentlyAiringEpisodes = data["recently aired episodes"];
-			console.log(TVdata.allRecentlyAiringEpisodes);
+			console.log(data);
+			TVdata.allShowNames = data["all-show-names"];
+			TVdata.allNextAiringEpisodes = data["next-airing-episodes"];
+			TVdata.allRecentlyAiringEpisodes = data["recently-aired-episodes"];
+			//console.log(TVdata.allRecentlyAiringEpisodes);
 			callback(null, "ok");
 		},
 		error: function(obj, status, errorString) {
@@ -210,9 +213,10 @@ function customFormatEpisodeTitle(episode) {
 function displayEpisodeInformation(nextEpisodesAiring, recentlyAiredEpisodes) {
 	var divTitleText;
 	var daysAiringIn = {};
-	var allEpisodes = nextEpisodesAiring.concat(recentlyAiredEpisodes);
+	//var allEpisodes = nextEpisodesAiring.concat(recentlyAiredEpisodes);
+	airingShowsDiv.empty();
 	
-	if ($.isEmptyObject(nextEpisodesAiring)) {
+	if (timeSwitch == "future" && $.isEmptyObject(nextEpisodesAiring)) {
 		airingShowsDiv.append
 		(
 		"<div class='future-episodes-day'>"
@@ -220,18 +224,28 @@ function displayEpisodeInformation(nextEpisodesAiring, recentlyAiredEpisodes) {
 		+ "</div>"
 		);
 		return;
-	} else if ($.isEmptyObject(recentlyAiredEpisodes)) {
-		console.log("empty!");/*
+	} else if (timeSwitch == "past" && $.isEmptyObject(recentlyAiredEpisodes)) {
+		console.log("recently aired episodes object is empty!");
 		airingShowsDiv.append
 		(
 		"<div class='past-episodes-day'>"
 		+ "<h3>There are no shows with past air dates.</h3>"
 		+ "</div>"
 		);
-		return;*/
+		return;
 	}
-	
-	$.each(nextEpisodesAiring, function(index, episode) {
+	switch(timeSwitch) {
+		case "future":
+			var episodesArray = nextEpisodesAiring;
+			break;
+		case "past":
+			var episodesArray = recentlyAiredEpisodes;
+			recentlyAiredEpisodes.sort(function(a, b) {
+				return b["days_airing_in"] - a["days_airing_in"];
+			});
+			break;
+	}
+	$.each(episodesArray, function(index, episode) {
 		customFormatEpisodeTitle(episode);
 		//check if there's an array index for this number of days airing in
 		if (!daysAiringIn[episode["days_airing_in"]]) {
@@ -240,7 +254,11 @@ function displayEpisodeInformation(nextEpisodesAiring, recentlyAiredEpisodes) {
 		daysAiringIn[episode["days_airing_in"]].push(episode);
 	});
 	$.each(daysAiringIn, function(days, episodes) {
-		if (days == 0) {
+		if (days == -1) {
+			divTitleText = "<h3>Aired Yesterday</h3>";
+		} else if (days < -1) {
+			divTitleText = "<h3>Aired " + days * -1 + " days ago</h3>";
+		} else if (days == 0) {
 			divTitleText = "<h3>Airing Today</h3>";
 		} else if (days == 1) {
 			divTitleText = "<h3>Airing Tomorrow</h3>";
@@ -376,7 +394,7 @@ function displayRssItems(rssItems, lastScrapeTS) {
 		var downloadLink = item["download_link"];
 		var displayLink = "<li><a href='" + downloadLink + "' class='item-link'>" + rawTitle + "</a></li>";
 		if (i == rssItems.length - 1) {
-			user.lastNzbID = itemID;
+			user.potentialLastViewedNzbID = itemID;
 		}
 		if (i < trackedShowsWithUpdates.length) {
 			if (rawTitle.toLowerCase().indexOf("720p") !== -1 ||
@@ -430,13 +448,28 @@ function displayRssItems(rssItems, lastScrapeTS) {
 	$("#next-scrape-timer").css("display", "none");
 }
 
+$("#Upcoming").change(function() {
+	if ($("#Upcoming").is(":checked")) {
+		timeSwitch = "future";
+		displayEpisodeInformation(user.nextEpisodesAiring, user.recentlyAiredEpisodes);
+	}
+})
+
+$("#Past").change(function() {
+	if ($("#Past").is(":checked")) {
+		timeSwitch = "past";
+		displayEpisodeInformation(user.nextEpisodesAiring, user.recentlyAiredEpisodes);
+	}
+})
+
 markRssAsReadButton.click(function() {
 	$("#latest-nzbs-div").hide();
 	$(".rss-read").hide();
 	$("#next-scrape-timer").css("display", "inline");
+	//console.log(user.potentialLastViewedNzbID);
 	$.ajax({
 		url: "update-last-nzb-viewed.php",
-		data: {"user_id": user.id, "last_nzb_id": user.lastNzbID},
+		data: {"user_id": user.id, "last_nzb_id": user.potentialLastViewedNzbID},
 		dataType: "text",
 		type: "POST",
 		success: function(data) {
@@ -671,14 +704,9 @@ function makeSiteInstance() {
 					success: function(data) {
 						//user is now logged in
 						loggedIn = true;
-						user.nextEpisodesAiring = data["next airing episodes"];
 						user.combinedHash = data["combined hash"];
 						user.name = data["username"];
-						user.trackedShows = data["users tracked show names"];
 						user.id = data["user id"];
-						user.rssItems = data["rss items"];
-						user.lastNzbID = data["last nzb id"];
-						user.lastScrapeTS = data["last scrape ts"];
 						
 						if (data["login type"] == "manual" && $("#remember-me").is(':checked')) {
 							//set login cookie
@@ -703,6 +731,52 @@ function makeSiteInstance() {
 						console.log(obj);
 						console.log("errorString is " + errorString);
 						callback("bad credentials");
+					}
+				});
+			},
+			function(callback) {
+				//get users show and episode info (not nzb info)
+				$.ajax({
+					url: "get-show-and-episode-info.php",
+					type: "POST",
+					data: {"shows-to-get": "user-shows", "user-id": user.id},
+					dataType: "json",
+					success: function(data) {
+						if (data["status"] == "success") {
+							user.nextEpisodesAiring = data["next-airing-episodes"];
+							user.recentlyAiredEpisodes = data["recently-aired-episodes"];
+							user.trackedShows = data["users-tracked-show-names"];
+							
+							callback(null, 'got show-and-episode-info');
+						} else {
+							//console.log(data["msg"]);
+						}
+
+					},
+					error: function(obj, status, errorString) {
+						console.log(obj);
+						console.log("errorString is " + errorString);
+						callback("get-show-and-episode-info.php ajax call error");
+					}
+				});
+			},
+			function(callback) {
+				//get users nzb rss info
+				$.ajax({
+					url: "get-nzb-rss-info.php",
+					type: "POST",
+					data: {"user-id": user.id, "last-scrape-ts": null},
+					dataType: "json",
+					success: function(data) {
+						user.potentialLastViewedNzbID = data["potential-last-viewed-nzb-id"];
+						user.rssItems = data["rss-items"];
+						user.lastScrapeTS = data["last-scrape-ts"];
+						callback(null, 'got nzb-rss-info');
+					},
+					error: function(obj, status, errorMsg) {
+						console.log(obj);
+						console.log("errorString is " + errorMsg);
+						console.log("error in ajax call for get-nzb-rss-info.php");
 					}
 				});
 			},
@@ -736,14 +810,19 @@ function makeSiteInstance() {
 	}
 	
 	this.logout = function() {
+		$("#Upcoming").click();
+		$("input.rss-read").hide();
 		loggedIn = false;
 		$.removeCookie("hash");
-		$(".rss-read").show();
+		$(".rss-read").hide();
 		userControlsDiv.css("display", "none");
 		trackMoreShowsDiv.css("display", "none");
 		airingShowsDiv.empty();
-		$("#latest-nzbs-div").accordion("destroy");
+		if ($("latest-nzbs-div").hasClass("ui-accordion")) {
+			$("#latest-nzbs-div").accordion("destroy");
+		}
 		$("#latest-nzbs-div").empty();
+		$("#next-scrape-timer").remove();
 		
 		async.series([
 			function(callback) {
@@ -771,16 +850,3 @@ function makeSiteInstance() {
 	}
 	
 }
-
-
-/* testing area!!! */
-/*
-var site = new makeSiteInstance();
-cookieHash = $.cookie("hash");
-
-site.login(null, null, cookieHash);
-
-*/
-
-/*------------------*/
-
