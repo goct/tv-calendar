@@ -49,7 +49,8 @@ foreach(array("future", "past") as $relative_time) {
 	}
 	if ($shows_to_get_string == "all") {
 		//select the most recently aired OR the next airing episode for every show
-		$query = "SELECT shows.title AS show_name, episodes.season_num, episodes.episode_num, episodes.title as episode_title, episodes.air_date AS air_date "
+		$query = "SELECT shows.title AS show_name, episodes.season_num, episodes.episode_num,
+		 episodes.title as episode_title, episodes.air_date AS air_date, episodes.airtime "
 		. "FROM episodes, shows, "
 		. "(SELECT show_id, " . $min_or_max . "(air_date) AS air_date FROM episodes WHERE air_date " . $operator . " '" . $now_date_string . "' GROUP BY show_id) AS sub_episodes "
 		. "WHERE episodes.air_date = sub_episodes.air_date "
@@ -69,6 +70,7 @@ foreach(array("future", "past") as $relative_time) {
 				$episode_num = $row["episode_num"];
 				$episode_title = $row["episode_title"];
 				$air_date = $row["air_date"];
+				$airtime = $row["airtime"];
 				$info_link = $row["info_link"];
 				
 				$episode_date = date_create($air_date);
@@ -84,6 +86,7 @@ foreach(array("future", "past") as $relative_time) {
 						"episode_num" => $episode_num,
 						"episode_title" => $episode_title,
 						"air_date" => $air_date,
+						"airtime" => $airtime,
 						"info_link" => $info_link,
 						"days_airing_in" => $days_airing_in
 						)
@@ -97,6 +100,7 @@ foreach(array("future", "past") as $relative_time) {
 						"episode_num" => $episode_num,
 						"episode_title" => $episode_title,
 						"air_date" => $air_date,
+						"airtime" => $airtime,
 						"info_link" => $info_link,
 						"days_airing_in" => $days_airing_in
 						)
@@ -110,7 +114,9 @@ foreach(array("future", "past") as $relative_time) {
 	} else {
 		//select the most recently aired OR the next airing episode for every show the user is tracking
 		foreach($users_tracked_show_ids as $show_id) {
-			$query = "SELECT shows.title AS show_name, episodes.season_num, episodes.episode_num, episodes.title AS episode_title, " . $min_or_max . "(episodes.air_date) AS air_date, episodes.info_link "
+			$query = "SELECT shows.title AS show_name, episodes.season_num, episodes.episode_num,
+			 episodes.title AS episode_title, " . $min_or_max . "(episodes.air_date) AS air_date,
+			  episodes.info_link, episodes.airtime "
 			. "FROM shows, episodes, "
 			. "(SELECT " . $min_or_max . "(episodes.air_date) AS air_date FROM episodes WHERE episodes.air_date " . $operator . " '" . $now_date_string . "' AND episodes.show_id = " . $show_id . ") AS sub_air_date "
 			. "WHERE shows.show_id = " . $show_id . " "
@@ -150,6 +156,7 @@ foreach(array("future", "past") as $relative_time) {
 				$episode_num = $row["episode_num"];
 				$episode_title = $row["episode_title"];
 				$air_date = $row["air_date"];
+				$airtime = $row["airtime"];
 				$info_link = $row["info_link"];
 				
 				$episode_date = date_create($air_date);
@@ -164,6 +171,7 @@ foreach(array("future", "past") as $relative_time) {
 						"episode_num" => $episode_num,
 						"episode_title" => $episode_title,
 						"air_date" => $air_date,
+						"airtime" => $airtime,
 						"info_link" => $info_link,
 						"days_airing_in" => $days_airing_in
 						)
@@ -176,6 +184,7 @@ foreach(array("future", "past") as $relative_time) {
 						"episode_num" => $episode_num,
 						"episode_title" => $episode_title,
 						"air_date" => $air_date,
+						"airtime" => $airtime,
 						"info_link" => $info_link,
 						"days_airing_in" => $days_airing_in
 						)

@@ -170,7 +170,7 @@ function getAllShowAndEpisodeInfo(callback) {
 		dataType: "json",
 		type: "POST",
 		success: function(data) {
-			console.log(data);
+			//console.log(data);
 			TVdata.allShowNames = data["all-show-names"];
 			TVdata.allNextAiringEpisodes = data["next-airing-episodes"];
 			TVdata.allRecentlyAiringEpisodes = data["recently-aired-episodes"];
@@ -271,9 +271,17 @@ function displayEpisodeInformation(nextEpisodesAiring, recentlyAiredEpisodes) {
 			var seasonNum = padToTwo(episode["season_num"]);
 			var episodeNum = padToTwo(episode["episode_num"]);
 			var episodeTitle = episode["episode_title"];
+			var airtime = episode["airtime"];
 			var lastUpdated = episode["last_updated"];
 			var sxex = "S" + seasonNum + "E" + episodeNum;
+			if (airtime === null) {
+				var airtimeP = "";
+			} else {
+				airtime = airtime.slice(0, -3); //slice off the :00 (seconds)
+				var airtimeP = "<b><p class='airtime'>" + airtime + "</p></b>";
+			}
 			airingShowsDiv.find("div:last").append(
+				airtimeP + 
 				"<p id='" + showName.replace(/\(|\)| /g, "") + "-" + sxex + "-p' " +
 				"class='airing-ep-p'>" +
 				showName + " - " + sxex + " - " + episodeTitle + "</p>" +
@@ -285,6 +293,7 @@ function displayEpisodeInformation(nextEpisodesAiring, recentlyAiredEpisodes) {
 }
 
 function updateScrapeTimer(lastScrapeTS) {
+	console.log("updating scrape timer interval");
 	var nowTS = Date.now() / 1000;
 	var TSDiff = nowTS - lastScrapeTS;
 	var minutesBetweenUpdates = 20;
@@ -324,6 +333,7 @@ function updateScrapeTimer(lastScrapeTS) {
 }
 
 function fetchNewRssItems(lastScrapeTS) {
+	console.log("intervaling fetchNewRssItems");
 	$.ajax({
 		data: {"last-scrape-ts": lastScrapeTS, "user-id": user.id},
 		type: "POST",
@@ -371,16 +381,8 @@ function displayRssItems(rssItems, lastScrapeTS) {
 		$(".rss-read").show();
 		$("#latest-nzbs-div").show();		
 	}
-	/*for (var i = 0; i < rssItems.length; i++) {
-		if (user.trackedShows.indexOf(rssItems[i]["show name"]) !== -1) {
-			//user is tracking this show
-			trackedShowsWithUpdates.push(rssItems[i]);
-			trackedShowsWithUpdates.push(rssItems[i]);
-			rssItems.splice(i, 1);
-			i--;
-		}
-	};
-	rssItems = trackedShowsWithUpdates.concat(rssItems);*/
+
+	//iterate through rss items
 	for (var i = 0; i < rssItems.length; i++) {
 		var item = rssItems[i];
 		var showName = item["show name"];
@@ -396,7 +398,7 @@ function displayRssItems(rssItems, lastScrapeTS) {
 		if (i == rssItems.length - 1) {
 			user.potentialLastViewedNzbID = itemID;
 		}
-		if (i < trackedShowsWithUpdates.length) {
+		if (user.trackedShows.indexOf(showName) !== -1) {
 			if (rawTitle.toLowerCase().indexOf("720p") !== -1 ||
 				rawTitle.toLowerCase().indexOf("1080p") !== -1) {
 				var quality = "HD";
@@ -810,6 +812,12 @@ function makeSiteInstance() {
 	}
 	
 	this.logout = function() {
+		if (typeof window.timerUpdater !== 'undefined') {
+			clearInterval(timerUpdater);
+		}
+		if (typeof window.rssUpdater !== "undefined") {
+			clearInterval(rssUpdater);
+		}
 		$("#Upcoming").click();
 		$("input.rss-read").hide();
 		loggedIn = false;

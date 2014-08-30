@@ -8,9 +8,8 @@ body {
 	background: -o-linear-gradient(-45deg,  #3a77b6 0%,#53ca96 100%); /* Opera 11.10+ */
 	background: -ms-linear-gradient(-45deg,  #3a77b6 0%,#53ca96 100%); /* IE10+ */
 	background: linear-gradient(135deg,  #3a77b6 0%,#53ca96 100%); /* W3C */
+	background:url(http://www.goct.ca/tv-calendar/images/textures/wood_1.png);
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#3a77b6', endColorstr='#53ca96',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
-
-
 }
 
 h3.tracked {
@@ -183,7 +182,15 @@ label[for=remember-me] {
 
 #user-controls {
 	display: none;
-	position: relative;
+	position: relative;background: rgb(255,255,255); /* Old browsers */
+background: -moz-linear-gradient(-45deg,  rgba(255,255,255,1) 0%, rgba(170,170,170,1) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, right bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(100%,rgba(170,170,170,1))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(-45deg,  rgba(255,255,255,1) 0%,rgba(170,170,170,1) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(-45deg,  rgba(255,255,255,1) 0%,rgba(170,170,170,1) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(-45deg,  rgba(255,255,255,1) 0%,rgba(170,170,170,1) 100%); /* IE10+ */
+background: linear-gradient(135deg,  rgba(255,255,255,1) 0%,rgba(170,170,170,1) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#aaaaaa',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+
 	/*background:url(http://www.goct.ca/tv-calendar/images/textures/fade.png) repeat 0 0;*/
 	background-color: #005BFF;
 	top: -8px;
@@ -213,9 +220,17 @@ label[for=remember-me] {
 	text-align: center;
 	padding: 14px;
 	margin-bottom: 15px;
-	background:url(http://www.goct.ca/tv-calendar/images/textures/fade.png) repeat 0 0;
+	background: rgb(170,170,170); /* Old browsers */
+	background: -moz-linear-gradient(-45deg,  rgba(170,170,170,1) 0%, rgba(234,234,234,1) 75%, rgba(170,170,170,1) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, right bottom, color-stop(0%,rgba(170,170,170,1)), color-stop(75%,rgba(234,234,234,1)), color-stop(100%,rgba(170,170,170,1))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(-45deg,  rgba(170,170,170,1) 0%,rgba(234,234,234,1) 75%,rgba(170,170,170,1) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(-45deg,  rgba(170,170,170,1) 0%,rgba(234,234,234,1) 75%,rgba(170,170,170,1) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(-45deg,  rgba(170,170,170,1) 0%,rgba(234,234,234,1) 75%,rgba(170,170,170,1) 100%); /* IE10+ */
+	background: linear-gradient(135deg,  rgba(170,170,170,1) 0%,rgba(234,234,234,1) 75%,rgba(170,170,170,1) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#aaaaaa', endColorstr='#aaaaaa',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+
 	/*border: 1px solid #000000;*/
-	border: 1px solid #118696;
+	border: 1px solid #000;
 	-moz-box-shadow: 0px 3px 5px #291E46;
 	-webkit-box-shadow: 0px 3px 5px #291E46;
 	box-shadow: 0px 3px 5px #291E46;
@@ -236,6 +251,10 @@ label[for=remember-me] {
 	top: 37px;
 }
 
+#next-scrape-timer {
+	color:#cccccc;
+}
+
 
 .button {
 	border: 1px solid rgb(57, 137, 175);
@@ -243,14 +262,9 @@ label[for=remember-me] {
 	zoom: 1.4;
 	position: absolute;
 
-	background: #499bea; /* Old browsers */
-	background: -moz-linear-gradient(top,  #499bea 0%, #207ce5 100%); /* FF3.6+ */
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#499bea), color-stop(100%,#207ce5)); /* Chrome,Safari4+ */
-	background: -webkit-linear-gradient(top,  #499bea 0%,#207ce5 100%); /* Chrome10+,Safari5.1+ */
-	background: -o-linear-gradient(top,  #499bea 0%,#207ce5 100%); /* Opera 11.10+ */
-	background: -ms-linear-gradient(top,  #499bea 0%,#207ce5 100%); /* IE10+ */
-	background: linear-gradient(to bottom,  #499bea 0%,#207ce5 100%); /* W3C */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#499bea', endColorstr='#207ce5',GradientType=0 ); /* IE6-9 */
+	background: black;
+	color: white;
+	border: 1px solid #000000;
 }
 
 .button:hover {
