@@ -63,6 +63,8 @@ foreach($xml->channel->item as $object) {
 		if ($am_pm == "pm") {
 			//set it to 24 hour time
 			$hours = intval($hours) + 12;
+			//set it to my time zone
+			$hours -= 2;
 		}
 		$prev_hours = intval(substr($time, 0, 2));
 		if ($hours < $prev_hours && $prev_hours != 12) {

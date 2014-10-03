@@ -136,6 +136,8 @@ function addShowToDatabase() {
 	showNameInput.val("");
 	showName = showName.replace("(", "");
 	showName = showName.replace(")", "");
+	showName = showName.replace("&", "and");
+	showName = showName.replace(":", "");
 	addShowResult.html("Submitted. Waiting for response from tvrage.com...");
 	$.ajax({
 		data: {'title': showName},
@@ -275,16 +277,15 @@ function displayEpisodeInformation(nextEpisodesAiring, recentlyAiredEpisodes) {
 			var lastUpdated = episode["last_updated"];
 			var sxex = "S" + seasonNum + "E" + episodeNum;
 			if (airtime === null) {
-				var airtimeP = "";
+				var airtimeString = "";
 			} else {
 				airtime = airtime.slice(0, -3); //slice off the :00 (seconds)
-				var airtimeP = "<b><p class='airtime'>" + airtime + "</p></b>";
+				var airtimeString = " (" + airtime + ")";
 			}
 			airingShowsDiv.find("div:last").append(
-				airtimeP + 
-				"<p id='" + showName.replace(/\(|\)| /g, "") + "-" + sxex + "-p' " +
+				"<p id='" + showName.replace(/\(|\)|\&|\:| /g, "") + "-" + sxex + "-p' " +
 				"class='airing-ep-p'>" +
-				showName + " - " + sxex + " - " + episodeTitle + "</p>" +
+				showName + " - " + sxex + " - " + episodeTitle + airtimeString + "</p>" +
 				"<div class='download-links'></div>"
 			);		
 		});
@@ -312,9 +313,10 @@ function updateScrapeTimer(lastScrapeTS) {
 	if (mm > 0) {
 		if (mm > minutesBetweenUpdates) {
 			$("#next-scrape-timer").text("A bug occurred. Try reloading the page in a few seconds"); //fix this
-			if (typeof timerUpdater !== 'undefined') {
-				clearInterval(timerUpdater);
-			}
+			//if (typeof timerUpdater !== 'undefined') {
+			console.log("about to clear it at the top");
+			clearInterval(timerUpdater);
+			//}
 			console.log(mm);
 			return;
 		}
@@ -326,9 +328,10 @@ function updateScrapeTimer(lastScrapeTS) {
 	} else {
 		$("#next-scrape-timer").text("Searching for new update...");
 		rssUpdater = setInterval(function() {fetchNewRssItems(lastScrapeTS)}, 3000);
-		if (typeof timerUpdater !== 'undefined') {
-			clearInterval(timerUpdater);
-		}
+		//if (typeof timerUpdater !== 'undefined') {
+		console.log("about to clear it at the bottom");
+		clearInterval(timerUpdater);
+		//}
 	}
 }
 
@@ -364,8 +367,6 @@ function fetchNewRssItems(lastScrapeTS) {
 }
 
 function displayRssItems(rssItems, lastScrapeTS) {
-	var trackedShowsWithUpdates = [];
-
 	$("#rss").append("<p id='next-scrape-timer'></p>");
 	//updateScrapeTimer(lastScrapeTS);
 	timerUpdater = setInterval(function() {
@@ -379,7 +380,15 @@ function displayRssItems(rssItems, lastScrapeTS) {
 		return;
 	} else {
 		$(".rss-read").show();
-		$("#latest-nzbs-div").show();		
+		$("#latest-nzbs-div").show();
+		rssItems.sort(function(a, b) {
+			//sort items alphabetically
+			if (a["show name"] < b["show name"]) {
+				return -1;
+			} else {
+				return 1;
+			}
+		});
 	}
 
 	//iterate through rss items
@@ -395,9 +404,14 @@ function displayRssItems(rssItems, lastScrapeTS) {
 		var itemID = item["item id"];
 		var downloadLink = item["download_link"];
 		var displayLink = "<li><a href='" + downloadLink + "' class='item-link'>" + rawTitle + "</a></li>";
-		if (i == rssItems.length - 1) {
-			user.potentialLastViewedNzbID = itemID;
+		//if (i == rssItems.length - 1) {
+			//user.potentialLastViewedNzbID = itemID;
+		//}
+		//change some show names so they match different data sources with conflicting names
+		if (showName == "Utopia US") {
+			showName = "Utopia (FOX)";
 		}
+
 		if (user.trackedShows.indexOf(showName) !== -1) {
 			if (rawTitle.toLowerCase().indexOf("720p") !== -1 ||
 				rawTitle.toLowerCase().indexOf("1080p") !== -1) {
@@ -405,7 +419,7 @@ function displayRssItems(rssItems, lastScrapeTS) {
 			} else {
 				var quality = "SD";
 			}
-			$("div").find("#" + showName.replace(/\(|\)| /g, "") + "-" + sxex + "-p").after(
+			$("div").find("#" + showName.replace(/\(|\)|\&|\:| /g, "") + "-" + sxex + "-p").after(
 				"<a class='download-link' href='" + downloadLink + "'>" + quality + "</a>"
 			);
 		}
@@ -426,13 +440,20 @@ function displayRssItems(rssItems, lastScrapeTS) {
 				var className = "untracked";
 				if (user.trackedShows.indexOf(showName) !== -1) {
 					className = "tracked";
+					$("#latest-nzbs-div").prepend(
+						"<h3 class='" + className + "'>" + showName + "</h3>" +
+						"<div id='seriesID" + seriesID + "'>" +
+							"<ul id='seriesID" + seriesID + "-list' class='series-list'></ul>" +
+						"</div>"
+					);					
+				} else {
+					$("#latest-nzbs-div").append(
+						"<h3 class='" + className + "'>" + showName + "</h3>" +
+						"<div id='seriesID" + seriesID + "'>" +
+							"<ul id='seriesID" + seriesID + "-list' class='series-list'></ul>" +
+						"</div>"
+					);
 				}
-				$("#latest-nzbs-div").append(
-					"<h3 class='" + className + "'>" + showName + "</h3>" +
-					"<div id='seriesID" + seriesID + "'>" +
-						"<ul id='seriesID" + seriesID + "-list' class='series-list'></ul>" +
-					"</div>"
-				);
 			}
 			$("#seriesID" + seriesID + "-list").append(displayLink);
 		}
@@ -468,7 +489,7 @@ markRssAsReadButton.click(function() {
 	$("#latest-nzbs-div").hide();
 	$(".rss-read").hide();
 	$("#next-scrape-timer").css("display", "inline");
-	//console.log(user.potentialLastViewedNzbID);
+	console.log("last nzb id will be set to " + user.potentialLastViewedNzbID);
 	$.ajax({
 		url: "update-last-nzb-viewed.php",
 		data: {"user_id": user.id, "last_nzb_id": user.potentialLastViewedNzbID},

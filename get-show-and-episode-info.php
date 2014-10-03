@@ -77,9 +77,9 @@ foreach(array("future", "past") as $relative_time) {
 				$time_diff = date_diff($now_date, $episode_date);
 				$days_airing_in = intval($time_diff->format("%a")) * $multiplier;
 
-				if ($relative_time == "future") {
-					$x = false;
-					array_push($next_airing_episodes, array
+				array_push(
+					($relative_time == "future" ? $next_airing_epsiodes : $recently_aired_episodes),
+					array
 						(
 						"show_name" => $show_name,
 						"season_num" => $season_num,
@@ -90,22 +90,7 @@ foreach(array("future", "past") as $relative_time) {
 						"info_link" => $info_link,
 						"days_airing_in" => $days_airing_in
 						)
-					);
-				} else if ($relative_time == "past") {
-					$x = true;
-					array_push($recently_aired_episodes, array
-						(
-						"show_name" => $show_name,
-						"season_num" => $season_num,
-						"episode_num" => $episode_num,
-						"episode_title" => $episode_title,
-						"air_date" => $air_date,
-						"airtime" => $airtime,
-						"info_link" => $info_link,
-						"days_airing_in" => $days_airing_in
-						)
-					);
-				}
+				);
 			}
 		} else {
 			echo json_encode(array("status" => "error", "msg" => "couldn't get episodes from db" . $mysqli->error));
@@ -163,7 +148,22 @@ foreach(array("future", "past") as $relative_time) {
 				$time_diff = date_diff($now_date, $episode_date);
 				$days_airing_in = intval($time_diff->format("%a")) * $multiplier;
 
-				if ($relative_time == "future") {
+
+				array_push(
+					($relative_time == "future" ? $next_airing_episodes : $recently_aired_episodes),
+					array
+						(
+						"show_name" => $show_name,
+						"season_num" => $season_num,
+						"episode_num" => $episode_num,
+						"episode_title" => $episode_title,
+						"air_date" => $air_date,
+						"airtime" => $airtime,
+						"info_link" => $info_link,
+						"days_airing_in" => $days_airing_in
+						)
+				);
+				/*if ($relative_time == "future") {
 					array_push($next_airing_episodes, array
 						(
 						"show_name" => $show_name,
@@ -189,7 +189,7 @@ foreach(array("future", "past") as $relative_time) {
 						"days_airing_in" => $days_airing_in
 						)
 					);
-				}
+				}*/
 				if (!array_search($row["show_name"], $users_tracked_show_names)) {
 					array_push($users_tracked_show_names, $show_name);
 				}
@@ -317,4 +317,6 @@ echo json_encode(array(
 	"users-tracked-show-names" => $users_tracked_show_names
 	)
 );
+
+function 
 ?>

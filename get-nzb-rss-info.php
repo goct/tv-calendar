@@ -87,7 +87,7 @@ function getNzbRssInfo($mysqli, $user_id, $last_scrape_ts) {
 				)
 			);
 		}
-		echo json_encode(array("potential last viewd nzb id" => $potential_last_viewed_nzb_id, 
+		echo json_encode(array("potential-last-viewed-nzb-id" => $potential_last_viewed_nzb_id, 
 					"rss-items" => $rss_items, 
 					"last-scrape-ts" => $last_scrape_ts
 					)
