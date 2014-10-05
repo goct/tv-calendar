@@ -71,6 +71,7 @@ function getNzbRssInfo($mysqli, $user_id, $last_scrape_ts) {
 	if ($result = $mysqli->query($query)) {
 		$potential_last_viewed_nzb_id = $result->num_rows + $last_viewed_nzb_id;
 		while ($row = $result->fetch_assoc()) {
+			$row = assignCustomShowNames($row);
 			array_push($rss_items, array(
 				"item id" => $row["item_id"],
 				"raw title" => $row["raw_title"],
@@ -97,5 +98,23 @@ function getNzbRssInfo($mysqli, $user_id, $last_scrape_ts) {
 		echo json_encode(array("status" => "error", "msg" => "last viewed nzb id for user from db" . $mysqli->error));
 		die();	
 	}
+}
+
+function assignCustomShowNames($episode) {
+	$custom_patterns = array(
+		"british football" => "/uefa|epl/i"
+	);
+	foreach($custom_patterns as $pattern_name => $pattern) {
+		if (preg_match($pattern, $episode["raw_title"])) {
+			switch($pattern_name) {
+				case "british football":
+					$episode["show_name"] = "British Football";
+					$episode["series_id"] = 2147483647;
+					break;
+			}
+			return $episode;
+		}
+	}
+	return $episode;
 }
 ?>

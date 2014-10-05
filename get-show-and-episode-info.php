@@ -10,6 +10,7 @@ if ($mysqli->connect_errno) {
 //$shows_to_get_string = mysqli_real_escape_string($mysqli, $_POST["shows-to-get"]);
 $user_id = $mysqli->real_escape_string($_POST["user-id"]);
 $shows_to_get_string = $mysqli->real_escape_string($_POST["shows-to-get"]);
+$custom_show_ids = array(2147483647);
 $users_tracked_show_ids = array();
 $users_tracked_show_names = array();
 $recently_aired_episodes = array();
@@ -26,7 +27,10 @@ if ($user_id) {
 
 	if ($result = $mysqli->query($query)) {
 		while ($row = $result->fetch_assoc()) {
-			array_push($users_tracked_show_ids, $row["show_id"]);
+			//do not include custom aggregate "shows"
+			if (!array_search($row["show_id"], $custom_show_ids)) {
+				array_push($users_tracked_show_ids, $row["show_id"]);
+			}
 		}
 	} else {
 		echo json_encode(array("status" => "error", "msg" => "couldn't get tracked shows from db"));
@@ -77,9 +81,8 @@ foreach(array("future", "past") as $relative_time) {
 				$time_diff = date_diff($now_date, $episode_date);
 				$days_airing_in = intval($time_diff->format("%a")) * $multiplier;
 
-				array_push(
-					($relative_time == "future" ? $next_airing_epsiodes : $recently_aired_episodes),
-					array
+				if ($relative_time == "future") {
+					array_push($next_airing_episodes, array
 						(
 						"show_name" => $show_name,
 						"season_num" => $season_num,
@@ -90,7 +93,21 @@ foreach(array("future", "past") as $relative_time) {
 						"info_link" => $info_link,
 						"days_airing_in" => $days_airing_in
 						)
-				);
+					);
+				} else if ($relative_time == "past") {
+					array_push($recently_aired_episodes, array
+						(
+						"show_name" => $show_name,
+						"season_num" => $season_num,
+						"episode_num" => $episode_num,
+						"episode_title" => $episode_title,
+						"air_date" => $air_date,
+						"airtime" => $airtime,
+						"info_link" => $info_link,
+						"days_airing_in" => $days_airing_in
+						)
+					);
+				}
 			}
 		} else {
 			echo json_encode(array("status" => "error", "msg" => "couldn't get episodes from db" . $mysqli->error));
@@ -125,7 +142,7 @@ foreach(array("future", "past") as $relative_time) {
 					$query = "SELECT title AS show_name FROM shows WHERE show_id = " . $show_id . ";";
 					if ($result = $mysqli->query($query)) {
 						$row = $result->fetch_assoc();
-						if (!array_search($row["show_name"], $users_tracked_show_names)) {
+						if (array_search($row["show_name"], $users_tracked_show_names) === false) {
 							array_push($users_tracked_show_names, $row["show_name"]);
 						}
 						continue;
@@ -148,22 +165,7 @@ foreach(array("future", "past") as $relative_time) {
 				$time_diff = date_diff($now_date, $episode_date);
 				$days_airing_in = intval($time_diff->format("%a")) * $multiplier;
 
-
-				array_push(
-					($relative_time == "future" ? $next_airing_episodes : $recently_aired_episodes),
-					array
-						(
-						"show_name" => $show_name,
-						"season_num" => $season_num,
-						"episode_num" => $episode_num,
-						"episode_title" => $episode_title,
-						"air_date" => $air_date,
-						"airtime" => $airtime,
-						"info_link" => $info_link,
-						"days_airing_in" => $days_airing_in
-						)
-				);
-				/*if ($relative_time == "future") {
+				if ($relative_time == "future") {
 					array_push($next_airing_episodes, array
 						(
 						"show_name" => $show_name,
@@ -189,113 +191,18 @@ foreach(array("future", "past") as $relative_time) {
 						"days_airing_in" => $days_airing_in
 						)
 					);
-				}*/
-				if (!array_search($row["show_name"], $users_tracked_show_names)) {
+				}
+				if (array_search($row["show_name"], $users_tracked_show_names) === false) {
 					array_push($users_tracked_show_names, $show_name);
 				}
 			} else {
 				echo json_encode(array("status" => "error", "msg" => "couldn't get episodes from db" . $mysqli->error));
 				die();		
 			}
-
-
-			/*
-			$query = "SELECT shows.title AS show_name, episodes.episode_num, episodes.title as episode_title, episodes.air_date AS recent_air_date
-			FROM episodes, shows,
-			(SELECT show_id, MAX(air_date) AS recent_air_date FROM episodes WHERE air_date < CURDATE() GROUP BY show_id) AS recent_episodes
-			WHERE episodes.air_date = recent_episodes.recent_air_date 
-			AND episodes.show_id = recent_episodes.show_id 
-			AND shows.show_id = recent_episodes.show_id 
-			AND shows.title IN ('" . $shows_to_get_string . "') 
-			GROUP BY show_name
-			ORDER BY air_date DESC;";
-			*/
-			//return;
 		}
 	}
 }
-/*echo json_encode(array("status" => "testerror", 
-						"msg" => "after " . $relative_time . " nextairingepisodes is " . $next_airing_episodes,
-						"array" => $next_airing_episodes));
-die();*/
-/*
-//package the recently aired episodes into an array
-if ($result = $mysqli->query($query)) {
-	while ($row = $result->fetch_assoc()) {
-		$episode_date = date_create($row["recent_air_date"]);
-		$episode_date->setTime(0, 0, 0);
-		$now_date->setTime(0, 0, 0);
-		$time_diff = date_diff($now_date, $episode_date);
-		$days_airing_in = $time_diff->format("%a");
-		
-		array_push($recently_aired_episodes, array
-			(
-			"show_name" => $row["show_name"],
-			"season_num" => $row["season_num"],
-			"episode_num" => $row["episode_num"],
-			"episode_title" => $row["episode_title"],
-			"air_date" => $row["recent_air_date"],
-			"days_airing_in" => $days_airing_in * -1
-			)
-		);
-	}
-} else {
-	echo "failed mysql thing";
-	die();
-}
-*/
-/*
-if ($shows_to_get_string == "all") {
-	//select the episode that airs next for every show
-	$query = "SELECT shows.title AS show_name, episodes.season_num, episodes.episode_num, episodes.title as episode_title, episodes.air_date, shows.last_updated 
-	FROM shows, episodes, 
-		(SELECT show_id, MIN(air_date) AS latest_air_date FROM episodes WHERE air_date >= '" . $now_date_string . "' GROUP BY show_id) AS latest_episodes 
-	WHERE episodes.air_date = latest_episodes.latest_air_date 
-	AND episodes.show_id = latest_episodes.show_id 
-	AND shows.show_id = latest_episodes.show_id 
-	GROUP BY shows.title 
-	ORDER BY air_date 
-	ASC;";
-} else {
-	//select the episode that airs next for each show in the string
-	$query = "SELECT shows.title AS show_name, episodes.season_num, episodes.episode_num, episodes.title as episode_title, episodes.air_date, shows.last_updated 
-	FROM shows, episodes, 
-		(SELECT show_id, MIN(air_date) AS latest_air_date FROM episodes WHERE air_date >= '" . $now_date_string . "' GROUP BY show_id) AS latest_episodes 
-	WHERE episodes.air_date = latest_episodes.latest_air_date 
-	AND episodes.show_id = latest_episodes.show_id 
-	AND shows.show_id = latest_episodes.show_id 
-	AND shows.title IN ('" . $shows_to_get_string . "') 
-	GROUP BY shows.title 
-	ORDER BY air_date 
-	ASC;";
-}
 
-//package next airing episodes into an array
-if ($result = $mysqli->query($query)) {
-	while ($row = $result->fetch_assoc()) {
-		$episode_date = date_create($row["air_date"]);
-		$episode_date->setTime(0, 0, 0);
-		//we already set now date time to 0 0 0
-		$time_diff = date_diff($now_date, $episode_date);
-		$days_airing_in = $time_diff->format("%a");
-		
-		array_push($next_airing_episodes, array
-			(
-			"show_name" => $row["show_name"],
-			"season_num" => $row["season_num"],
-			"episode_num" => $row["episode_num"],
-			"episode_title" => $row["episode_title"],
-			"air_date" => $row["air_date"],
-			"last_updated" => $row["last_updated"],
-			"days_airing_in" => $days_airing_in
-			)
-		);
-	}
-} else {
-	echo "failed mysql thing3";
-	die();
-}
-*/
 //get all show names
 $query = "SELECT * FROM shows;";
 $all_show_names = array();
@@ -317,6 +224,4 @@ echo json_encode(array(
 	"users-tracked-show-names" => $users_tracked_show_names
 	)
 );
-
-function 
 ?>

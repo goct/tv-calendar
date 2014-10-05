@@ -59,13 +59,14 @@ function initRemoveShowButtons() {
 	removeShowButtons.click(function() {
 		var showName = $(this).attr("id");
 		$(this).remove();
-		var showNameSelector = showName.replace(/ /g, "-");
-		showNameSelector = showNameSelector.replace("(", "\\(");
-		showNameSelector = showNameSelector.replace(")", "\\)");
-		showNameSelector = showNameSelector.replace("&", "\\&");
-		showNameSelector = showNameSelector.replace(":", "\\:");
-		var listing = $("#" + showNameSelector + "p");
-		var listingParentDiv = listing.parent();
+		var showNameSelector = showName.replace(/ |\-/g, "");
+		showNameSelector = showNameSelector.replace("(", "");
+		showNameSelector = showNameSelector.replace(")", "");
+		showNameSelector = showNameSelector.replace("&", "");
+		showNameSelector = showNameSelector.replace(":", "").toLowerCase();
+		console.log(showNameSelector);
+		var listings = $(".airing-ep-p." + showNameSelector);
+		var listingParentDivs = listings.parent();
 		$.ajax({
 			data: {"show-name": showName, "user-id": user.id},
 			type: "POST",
@@ -81,18 +82,30 @@ function initRemoveShowButtons() {
 							return false;
 						}
 					});
+					$.each(user.recentlyAiredEpisodes, function(index, episode) {
+						if (episode.show_name == showName) {
+							user.recentlyAiredEpisodes.splice(user.recentlyAiredEpisodes.indexOf(episode), 1);
+							return false;
+						}
+					});
 					user.untrackedShows.push(showName);
 					updateTrackedShows();
 					updateUsersUntrackedShows();
 
-					addShowResult.html("successfully removed " + showName);
-					if (listingParentDiv.find("p").length == 1) {
-						//only one <p> in parent div, so remove div
-						listingParentDiv.remove();
-					} else {
-						//multiple items in parent div, so remove the <p> only
-						listing.remove();
-					}
+					//addShowResult.html("successfully removed " + showName);
+					console.log("successfully removed " + showName);
+					$.each(listingParentDivs, function(index, listingParentDiv) {
+						var listingParentDiv = $(listingParentDiv);
+						if (listingParentDiv.find("p").length == 1) {
+							//only one <p> in parent div, so remove div
+							listingParentDiv.remove();
+						} else {
+							//multiple items in parent div, so remove the <p> only
+							listingParentDiv.find("[id*=" + showNameSelector + "]").remove();
+							//listings.remove();
+						}
+					});
+
 				} else {
 					console.log("error deleting show from users tracked list in db");
 					console.log(data);
@@ -122,6 +135,7 @@ function updateTrackedShows() {
 		});			
 	}
 	$("#tracked-shows").find("p").html(displayShowsList);
+	$("#tracked-shows").css("display", "block");
 	initRemoveShowButtons();
 }
 
@@ -134,10 +148,19 @@ function addShowToDatabase() {
 	addNewShowButton.css({"display": "none"});
 	showNameInput.css({"display": "none"});
 	showNameInput.val("");
-	showName = showName.replace("(", "");
+	var mapObj = {
+		"(": "",
+		")": "",
+		"&": "and",
+		":": ""
+	}
+	showName = showName.replace(/\(|\)|\&|\:/gi, function(matched) {
+		return mapObj[matched];
+	})
+	/*showName = showName.replace("(", "");
 	showName = showName.replace(")", "");
 	showName = showName.replace("&", "and");
-	showName = showName.replace(":", "");
+	showName = showName.replace(":", "");*/
 	addShowResult.html("Submitted. Waiting for response from tvrage.com...");
 	$.ajax({
 		data: {'title': showName},
@@ -284,7 +307,7 @@ function displayEpisodeInformation(nextEpisodesAiring, recentlyAiredEpisodes) {
 			}
 			airingShowsDiv.find("div:last").append(
 				"<p id='" + showName.replace(/\(|\)|\&|\:| /g, "") + "-" + sxex + "-p' " +
-				"class='airing-ep-p'>" +
+				"class='airing-ep-p " + showName.replace(/\(|\)|\&|\:| /g, "") + "'>" +
 				showName + " - " + sxex + " - " + episodeTitle + airtimeString + "</p>" +
 				"<div class='download-links'></div>"
 			);		
@@ -618,7 +641,7 @@ trackSelectedShowsButton.click(function() {
 	updateUsersUntrackedShows();
 	trackMoreShowsDiv.css("display", "none");
 	
-	//we now need to update the users next episodes airing object
+	//we now need to update the users next episodes airing and recently aired episodes objects
 	$.each(newlyTrackedShows, function(index, newlyTrackedShowName) {
 		$.each(TVdata.allNextAiringEpisodes, function(index, episode) {
 			if (episode["show_name"] == newlyTrackedShowName) {
@@ -626,10 +649,16 @@ trackSelectedShowsButton.click(function() {
 				return false;
 			}
 		});
+		$.each(TVdata.allRecentlyAiringEpisodes, function(index, episode) {
+			if (episode["show_name"] == newlyTrackedShowName) {
+				user.recentlyAiredEpisodes.push(episode);
+				return false;
+			}
+		});
 	});
 	
 	airingShowsDiv.empty();
-	displayEpisodeInformation(user.nextEpisodesAiring, null);
+	displayEpisodeInformation(user.nextEpisodesAiring, user.recentlyAiredEpisodes);
 	
 	$.ajax({
 		url: "update-users-shows.php",
