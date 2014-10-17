@@ -211,7 +211,7 @@ function getAllShowAndEpisodeInfo(callback) {
 }
 
 function getBBDay(dateObj) {
-	var moveInDate = new Date("2014-06-20"); //day the bb houseguests moved into the house
+	var moveInDate = new Date("2015-06-30"); //day the bb houseguests moved into the house
 	var BBDay = dateDiffInDays(dateObj, moveInDate);
 	return BBDay * -1;
 }
@@ -225,14 +225,14 @@ function dateDiffInDays(a, b) {
 }
 
 function customFormatEpisodeTitle(episode) {
-	switch(episode["show_name"]) {
+	/*switch(episode["show_name"]) {
 		case "Big Brother (US)":
 			if (episode["episode_title"].indexOf("(BB Day ") == -1) {
 				var airDateObj = new Date(episode["air_date"]);
 				episode["episode_title"] = episode["episode_title"] + " (BB Day " + getBBDay(airDateObj) + ")";
 			}
 			break;
-	}
+	}*/
 }
 
 function displayEpisodeInformation(nextEpisodesAiring, recentlyAiredEpisodes) {
